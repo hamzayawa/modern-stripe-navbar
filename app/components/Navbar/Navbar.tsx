@@ -4,8 +4,6 @@ import DropdownMenu from "./DropdownMenu";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { productItems, solutionItems, developerItems, resourceItems } from "./mockData";
-import Link from 'next/link';
-import Image from 'next/image';
 
 const Navbar = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
