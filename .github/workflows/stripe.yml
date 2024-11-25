@@ -1,4 +1,4 @@
-name: Nextjs 15, Typescript CI/CD
+name: Nextjs CI/CD Pipeline
 
 on:
   push:
@@ -32,9 +32,9 @@ jobs:
       - name: 🔧 Install dependencies with legacy peer deps
         run: npm install --legacy-peer-deps
 
-      - name: 🔍 Type check
-        run: npm run type-check || npm run tsc
-        
+      - name: 🔍 TypeScript check
+        run: npx tsc --noEmit
+
       - name: 💅 Lint check
         run: npm run lint
 
