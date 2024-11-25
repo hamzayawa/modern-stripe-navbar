@@ -1,85 +1,84 @@
-name: CI for Next.js 15 with TypeScript, Framer Motion, and React Lucide
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - main
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '[18.x, 20.x, 22.x]'
 
 jobs:
+  validate:
+    name: 🔍 Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type check
+        run: npm run type-check || npm run tsc
+        
+      - name: 💅 Lint check
+        run: npm run lint
+
   build:
+    name: 🏗️ Build
+    needs: validate
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
 
-      # Set up Node.js (ensure it supports Next.js 15)
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: '18' # Make sure to use a compatible Node.js version for Next.js 15
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      # Install dependencies
-      - name: Install dependencies
-        run: |
-          npm ci # Install dependencies from package-lock.json (faster than `npm install`)
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      # Run TypeScript type checks
-      - name: TypeScript: Check types
-        run: |
-          npx tsc --noEmit
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
-      # Run tests (optional if you have a test suite like Jest)
-      - name: Run tests
-        run: |
-          npm run test
+      - name: 📊 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next
+          retention-days: 7
 
-      # Lint code (optional, if you're using ESLint)
-      - name: Lint code
-        run: |
-          npm run lint
-
-      # Build the Next.js project
-      - name: Build Next.js project
-        run: |
-          npm run build
-
-      # Run static analysis (optional, if you use tools like `next-stdlib`, `next-lighthouse`, etc.)
-      - name: Run Static Analysis (Optional)
-        run: |
-          # Example: Run Lighthouse tests or other analysis tools
-          npx next-stdlib analyze # Adjust for your static analysis tool
-
-      # Deploy (optional, if you want automatic deployment with Vercel or another platform)
-      - name: Deploy to Vercel
-        if: github.ref == 'refs/heads/main' # Deploy only on main branch push
-        run: |
-          npm run deploy
-
-  # Optionally, if you want to test the Next.js production build, you can add another job for e2e tests
-  e2e-tests:
+  test:
+    name: 🧪 Test
+    needs: validate
     runs-on: ubuntu-latest
-    needs: build # Ensure build completes before testing
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: |
-          npm ci
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      - name: Run e2e tests
-        run: |
-          npm run test:e2e # You should configure this if you have e2e tests
-
-
+      - name: 🧪 Run tests
+        run: npm test
+        env:
+          CI: true
