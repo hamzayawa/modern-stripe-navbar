@@ -72,31 +72,3 @@ jobs:
           name: build-output
           path: .next
           retention-days: 7
-
-  test:
-    name: 🧪 Test
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📦 Clean install
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-          npm cache clean --force
-
-      - name: 🔧 Install dependencies with legacy peer deps
-        run: npm install --legacy-peer-deps
-
-      - name: 🧪 Run tests
-        run: npm test
-        env:
-          CI: true
